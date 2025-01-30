@@ -1,17 +1,17 @@
 from db import ejecutar_consulta, obtener_datos
 
 # Funciones para manejar Clientes
-def insertar_cliente(nombre, cuit="", direccion="", tipo_cliente=""):
-    query = "INSERT INTO Cliente (Nombre, CUIT, direccion,tipo_cliente) VALUES (?, ?, ?, ?)"
-    ejecutar_consulta(query, (nombre, cuit, direccion,tipo_cliente))
+def insertar_cliente(nombre, cuit="", direccion="", tipo_cliente="", n_telefonico=""):
+    query = "INSERT INTO Cliente (Nombre, CUIT, direccion,tipo_cliente,n_telefonico) VALUES (?, ?, ?, ?, ?)"
+    ejecutar_consulta(query, (nombre, cuit, direccion, tipo_cliente, n_telefonico))
 
 def consultar_clientes(nombre=""):
     query = "SELECT * FROM Cliente WHERE Nombre LIKE ?"
     return obtener_datos(query, ('%' + nombre + '%',))
 
-def modificar_cliente(id_cliente, nombre, cuit="", direccion="",tipo_cliente=""):
-    query = "UPDATE Cliente SET Nombre = ?, CUIT = ?, direccion = ?, tipo_cliente = ? WHERE id_cliente = ?"
-    ejecutar_consulta(query, (nombre, cuit, direccion,tipo_cliente,id_cliente))
+def modificar_cliente(id_cliente, nombre, cuit="", direccion="",tipo_cliente="", n_telefonico=""):
+    query = "UPDATE Cliente SET Nombre = ?, CUIT = ?, direccion = ?, tipo_cliente = ?, n_telefonico = ? WHERE id_cliente = ?"
+    ejecutar_consulta(query, (nombre, cuit, direccion,tipo_cliente, n_telefonico,id_cliente))
 
 def eliminar_cliente(id_cliente):
     query = "DELETE FROM Cliente WHERE id_cliente = ?"
@@ -71,7 +71,8 @@ def consultar_acciones_intuitivo(id_equipo="", id_tecnico=""):
         T.Nombre AS Tecnico_Nombre,
         A.fecha_entrada, 
         A.fecha_salida, 
-        A.descripcion, 
+        A.descripcion,
+        A.horas_insumidas, 
         A.garantia 
     FROM 
         Accion A 
@@ -93,17 +94,17 @@ def eliminar_equipo(id_equipo):
     ejecutar_consulta(query, (id_equipo,))
 
 # Funciones para manejar Acciones
-def insertar_accion(id_equipo, id_tecnico, fecha_entrada, fecha_salida="", descripcion="", garantia=""):
-    query = "INSERT INTO Accion (id_equipo, id_tecnico, fecha_entrada, fecha_salida, descripcion, garantia) VALUES (?, ?, ?, ?, ?, ?)"
-    ejecutar_consulta(query, (id_equipo, id_tecnico, fecha_entrada, fecha_salida, descripcion, garantia))
+def insertar_accion(id_equipo, id_tecnico, fecha_entrada, fecha_salida="", descripcion="", garantia="",horas_insumidas=""):
+    query = "INSERT INTO Accion (id_equipo, id_tecnico, fecha_entrada, fecha_salida, descripcion, garantia, horas_insumidas) VALUES (?, ?, ?, ?, ?, ?, ?)"
+    ejecutar_consulta(query, (id_equipo, id_tecnico, fecha_entrada, fecha_salida, descripcion, garantia,horas_insumidas))
 
 def consultar_acciones(id_equipo="", id_tecnico=""):
     query = "SELECT * FROM Accion WHERE id_equipo LIKE ? AND id_tecnico LIKE ?"
     return obtener_datos(query, ('%' + id_equipo + '%', '%' + id_tecnico + '%',))
 
-def modificar_accion(ot, id_equipo, id_tecnico, fecha_entrada, fecha_salida="", descripcion="", garantia=""):
-    query = "UPDATE Accion SET id_equipo = ?, id_tecnico = ?, fecha_entrada = ?, fecha_salida = ?, descripcion = ?, garantia = ? WHERE OT = ?"
-    ejecutar_consulta(query, (id_equipo, id_tecnico, fecha_entrada, fecha_salida, descripcion, garantia, ot))
+def modificar_accion(ot, id_equipo, id_tecnico, fecha_entrada, fecha_salida="", descripcion="", garantia="",horas_insumidas=""):
+    query = "UPDATE Accion SET id_equipo = ?, id_tecnico = ?, fecha_entrada = ?, fecha_salida = ?, descripcion = ?, garantia = ?, horas_insumidas = ? WHERE OT = ?"
+    ejecutar_consulta(query, (id_equipo, id_tecnico, fecha_entrada, fecha_salida, descripcion, garantia, horas_insumidas ,ot))
 
 def eliminar_accion(ot):
     query = "DELETE FROM Accion WHERE OT = ?"

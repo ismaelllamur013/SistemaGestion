@@ -1,9 +1,10 @@
 CREATE TABLE Cliente (
     id_cliente INTEGER PRIMARY KEY AUTOINCREMENT,
     Nombre TEXT NOT NULL,
-    CUIT TEXT NOT NULL,
-    direccion TEXT NOT NULL,
-    tipo_cliente TEXT NOT NULL
+    CUIT TEXT,
+    direccion TEXT,
+    tipo_cliente TEXT,
+    n_telefonico TEXT 
 );
 
 CREATE TABLE Tecnico (
@@ -27,8 +28,9 @@ CREATE TABLE Accion (
     id_equipo INTEGER,
     id_tecnico INTEGER,
     fecha_entrada TEXT NOT NULL,
-    fecha_salida TEXT NOT NULL,
-    descripcion TEXT NOT NULL,
+    fecha_salida TEXT ,
+    descripcion TEXT ,
+    horas_insumidas TEXT ,
     garantia TEXT NOT NULL,
     FOREIGN KEY (id_equipo) REFERENCES Equipo(id_equipo),
     FOREIGN KEY (id_tecnico) REFERENCES Tecnico(id_tecnico)
