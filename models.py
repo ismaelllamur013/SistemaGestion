@@ -120,11 +120,17 @@ def resultados_registros():
     return obtener_datos(query)
 
 def modificar_accion_descripcion(nueva_descripcion, accion_id):
-    # Realizar la actualización solo de la descripción de la acción
     query = "UPDATE Accion SET descripcion = ? WHERE OT = ?"
     ejecutar_consulta(query, (nueva_descripcion, accion_id))
 
 def get_descripcion_actual(accion_id):
-    # Suponiendo que tienes acceso a una base de datos
     query = "SELECT descripcion FROM Accion WHERE OT = ?"
     return obtener_datos(query, (str(accion_id)))
+
+def modificar_accion_descripcion_y_fecha_salida(nueva_descripcion="", nueva_fecha_salida="", accion_id=""):
+    query = """
+        UPDATE Accion
+        SET descripcion = ?, fecha_salida = ?
+        WHERE OT = ?
+    """
+    ejecutar_consulta(query, (nueva_descripcion, nueva_fecha_salida, accion_id))

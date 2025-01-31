@@ -1,9 +1,17 @@
 import matplotlib.pyplot as plt
+from db import obtener_datos
 
-def crear_grafico_tecnicos(tecnicos):
-    # Crear un gráfico de barras para la cantidad de equipos arreglados por cada técnico
-    nombres_tecnicos = list(tecnicos.keys())
-    cantidades = list(tecnicos.values())
+def crear_grafico_tecnicos():
+    query = """
+    SELECT Tecnico.Nombre, COUNT(Accion.OT) AS reparaciones
+    FROM Accion
+    JOIN Tecnico ON Accion.id_tecnico = Tecnico.id_tecnico
+    GROUP BY Tecnico.Nombre;
+    """
+    datos = obtener_datos(query)
+
+    nombres_tecnicos = [dato[0] for dato in datos]
+    cantidades = [dato[1] for dato in datos]
 
     plt.figure(figsize=(10, 6))
     plt.bar(nombres_tecnicos, cantidades, color='skyblue')
@@ -13,36 +21,49 @@ def crear_grafico_tecnicos(tecnicos):
     plt.xticks(rotation=45, ha='right')
     plt.tight_layout()
 
-    # Mostrar el gráfico
     plt.show()
 
-from datetime import datetime
+def crear_grafico_tipo_cliente():
+    query = """
+    SELECT Cliente.tipo_cliente, COUNT(Accion.OT) AS reparaciones
+    FROM Accion
+    JOIN Equipo ON Accion.id_equipo = Equipo.id_equipo
+    JOIN Cliente ON Equipo.id_cliente = Cliente.id_cliente
+    GROUP BY Cliente.tipo_cliente;
+    """
+    datos = obtener_datos(query)
 
-# Diccionario de nombres de los meses
-nombres_meses = {
-    1: "Enero", 2: "Febrero", 3: "Marzo", 4: "Abril", 5: "Mayo", 6: "Junio",
-    7: "Julio", 8: "Agosto", 9: "Septiembre", 10: "Octubre", 11: "Noviembre", 12: "Diciembre"
-}
-
-def crear_grafico_meses(meses):
-    # Convertir las fechas a números de meses y extraer los valores
-    meses_list = []
-    cantidades = []
-    
-    for fecha, cantidad in meses.items():
-        # Convertir la fecha en formato 'MM/DD/YY' a un objeto datetime
-        fecha_obj = datetime.strptime(fecha, '%m/%d/%y')
-        mes = fecha_obj.month  # Obtener el número del mes
-        meses_list.append(nombres_meses[mes])  # Obtener el nombre del mes
-        cantidades.append(cantidad)  # Obtener la cantidad asociada
+    tipos_cliente = [dato[0] for dato in datos]
+    reparaciones = [dato[1] for dato in datos]
 
     plt.figure(figsize=(10, 6))
-    plt.bar(meses_list, cantidades, color='orange')
-    plt.title('Cantidad de Equipos Arreglados por Mes')
-    plt.xlabel('Mes')
-    plt.ylabel('Cantidad de Equipos')
+    plt.bar(tipos_cliente, reparaciones, color='lightblue')
+    plt.title('Cantidad de Reparaciones por Tipo de Cliente')
+    plt.xlabel('Tipo de Cliente')
+    plt.ylabel('Cantidad de Reparaciones')
     plt.xticks(rotation=45, ha='right')
     plt.tight_layout()
 
-    # Mostrar el gráfico
+    plt.show()
+
+def crear_grafico_tipo_equipo():
+    query = """
+    SELECT Equipo.Tipo, COUNT(Accion.OT) AS reparaciones
+    FROM Accion
+    JOIN Equipo ON Accion.id_equipo = Equipo.id_equipo
+    GROUP BY Equipo.Tipo;
+    """
+    datos = obtener_datos(query)
+
+    tipos_equipo = [dato[0] for dato in datos]
+    reparaciones = [dato[1] for dato in datos]
+
+    plt.figure(figsize=(10, 6))
+    plt.bar(tipos_equipo, reparaciones, color='lightgreen')
+    plt.title('Cantidad de Reparaciones por Tipo de Equipo')
+    plt.xlabel('Tipo de Equipo')
+    plt.ylabel('Cantidad de Reparaciones')
+    plt.xticks(rotation=45, ha='right')
+    plt.tight_layout()
+
     plt.show()

@@ -6,8 +6,8 @@ from models import insertar_cliente, consultar_clientes, modificar_cliente, elim
 from models import insertar_tecnico, consultar_tecnicos, modificar_tecnico, eliminar_tecnico
 from models import insertar_equipo, consultar_equipos, modificar_equipo, eliminar_equipo, consultar_equipos_intuitiva
 from models import insertar_accion, consultar_acciones, modificar_accion, eliminar_accion, consultar_acciones_intuitivo
-from models import resultados_registros, modificar_accion_descripcion, get_descripcion_actual
-from graficos import crear_grafico_tecnicos, crear_grafico_meses
+from models import resultados_registros, modificar_accion_descripcion, get_descripcion_actual, modificar_accion_descripcion_y_fecha_salida
+from graficos import crear_grafico_tecnicos, crear_grafico_tipo_cliente, crear_grafico_tipo_equipo
 from excel import importar_desde_excel, exportar_a_excel
 
 class VentanaFormulario:
@@ -205,7 +205,7 @@ class VentanaFormulario:
 
     def cargar_equipo_combobox(self):
         equipos = consultar_equipos()
-        self.combobox_equipo_accion['values'] = [f"{equipo[0]} - {equipo[1]} - {equipo[2]} - {equipo[3]} - {equipo[4]}" for equipo in equipos]
+        self.combobox_equipo_accion['values'] = [f"{equipo[2]} - {equipo[3]} - {equipo[4]}" for equipo in equipos]
         self.combobox_equipo_accion.set('') 
 
     def cargar_tecnico_combobox(self):
@@ -491,10 +491,8 @@ class VentanaAcciones:
         self.buscar_button = tk.Button(self.formulario, text="Buscar", command=self.buscar_registros)
         self.buscar_button.pack(padx=10, pady=5)
 
-        # Configuración del Treeview
         self.treeview = ttk.Treeview(self.formulario, columns=("OT", "Marca", "Modelo", "Cliente", "Técnico", "Entrada", "Salida", "Descripción", "Garantía"), show="headings", height=20)
 
-        # Definir los encabezados de las columnas
         self.treeview.heading("OT", text="OT")
         self.treeview.heading("Marca", text="Marca")
         self.treeview.heading("Modelo", text="Modelo")
@@ -505,7 +503,6 @@ class VentanaAcciones:
         self.treeview.heading("Descripción", text="Descripción")
         self.treeview.heading("Garantía", text="Garantía")
 
-        # Configurar el ancho de las columnas
         self.treeview.column("OT", width=50)
         self.treeview.column("Marca", width=100, anchor="w")
         self.treeview.column("Modelo", width=100, anchor="w")
@@ -518,19 +515,16 @@ class VentanaAcciones:
 
         self.treeview.pack(padx=10, pady=10)
 
-        # Barra de desplazamiento
         scrollbar = ttk.Scrollbar(self.formulario, orient="vertical", command=self.treeview.yview)
         scrollbar.pack(side="right", fill="y")
         self.treeview.config(yscrollcommand=scrollbar.set)
 
-        self.registros = resultados_registros()  # Aquí es donde obtienes los registros
+        self.registros = resultados_registros()  
         self.mostrar_registros(self.registros)
 
-        # Bind para abrir la ventana emergente con la descripción
         self.treeview.bind("<Double-1>", self.mostrar_descripcion_completa)
 
     def mostrar_registros(self, registros):
-        # Limpiar el contenido previo
         for row in self.treeview.get_children():
             self.treeview.delete(row)
 
@@ -538,43 +532,61 @@ class VentanaAcciones:
             print("No hay registros disponibles")
             return
 
-        # Insertar los registros en el Treeview
         for registro in registros:
-            # Insertamos la fila
             item_id = self.treeview.insert("", tk.END, values=registro)
 
-            # Revisamos si la columna "Salida" tiene un valor (fecha de salida)
-            fecha_salida = registro[6]  # El valor de la columna "Salida" (índice 6)
+            fecha_salida = registro[6]  
             if fecha_salida:
-                # Si tiene una fecha de salida, coloreamos la fila de verde
                 self.treeview.item(item_id, tags=("verde",))
 
-        # Aplicamos el color verde a las filas con fecha de salida
         self.treeview.tag_configure("verde", background="lightgreen")
 
     def mostrar_descripcion_completa(self, event):
-        # Obtenemos el item seleccionado en el Treeview
         item = self.treeview.selection()
         if not item:
             return
 
-        # Extraemos el valor de la columna "Descripción"
-        descripcion = self.treeview.item(item[0], "values")[7]  # La columna "Descripción" es la 7
+        descripcion = self.treeview.item(item[0], "values")[7]  
+        fecha_salida = self.treeview.item(item[0], "values")[6]  
 
-        # Crear una ventana emergente para mostrar la descripción completa
         ventana_descripcion = tk.Toplevel(self.master)
-        ventana_descripcion.title("Descripción Completa")
+        ventana_descripcion.title("Editar Descripción y Fecha de Salida")
 
-        # Crear un widget Text para mostrar la descripción
         texto = tk.Text(ventana_descripcion, wrap="word", width=60, height=15)
-        texto.insert(tk.END, descripcion)
-        texto.config(state=tk.DISABLED)  # Hacer el texto solo lectura
+        texto.insert(tk.END, descripcion)  
+        texto.config(state=tk.NORMAL)  
         texto.pack(padx=10, pady=10)
 
-        # Botón para cerrar la ventana emergente
+        fecha_salida_label = tk.Label(ventana_descripcion, text="Fecha de Salida (Opcional):")
+        fecha_salida_label.pack(padx=10, pady=5)
+
+        entry_fecha_salida = tk.Entry(ventana_descripcion, width=20)
+        entry_fecha_salida.insert(tk.END, fecha_salida if fecha_salida else "")
+        entry_fecha_salida.pack(padx=10, pady=5)
+
+        def guardar_descripcion_y_salida():
+            nueva_descripcion = texto.get("1.0", tk.END).strip()  
+            nueva_fecha_salida = entry_fecha_salida.get().strip() 
+
+            if nueva_descripcion:  
+                accion_id = int(self.treeview.item(item[0], "values")[0])  
+            
+                modificar_accion_descripcion_y_fecha_salida(nueva_descripcion, nueva_fecha_salida, accion_id)
+
+                ventana_descripcion.destroy()
+
+                self.registros = resultados_registros()  
+                self.mostrar_registros(self.registros)
+            else:
+                self.mostrar_mensaje("Error", "La descripción no puede estar vacía.")
+
+        guardar_button = tk.Button(ventana_descripcion, text="Guardar", command=guardar_descripcion_y_salida)
+        guardar_button.pack(pady=5)
+
         cerrar_button = tk.Button(ventana_descripcion, text="Cerrar", command=ventana_descripcion.destroy)
         cerrar_button.pack(pady=5)
 
+    
     def buscar_registros(self):
         busqueda = self.buscar_entry.get().lower()
 
@@ -658,25 +670,10 @@ class Interfaz:
         importar_desde_excel()
 
     def mostrar_estadisticas(self):
-        acciones = consultar_acciones_intuitivo() 
-        tecnicos = {}
-        meses = {}
-
-        for accion in acciones:
-            tecnico = accion[3] 
-            fecha_entrada = accion[4] 
         
-            if tecnico not in tecnicos:
-                tecnicos[tecnico] = 0
-            tecnicos[tecnico] += 1
-
-            mes = fecha_entrada.split('-')[0]  
-            if mes not in meses:
-                meses[mes] = 0
-            meses[mes] += 1
-
-        crear_grafico_tecnicos(tecnicos)
-        crear_grafico_meses(meses)
+        crear_grafico_tecnicos()
+        crear_grafico_tipo_cliente()  
+        crear_grafico_tipo_equipo() 
 
 
 def iniciar_interfaz():
